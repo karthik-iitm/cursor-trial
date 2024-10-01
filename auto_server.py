@@ -39,7 +39,10 @@ class CustomHandler(SimpleHTTPRequestHandler):
                     template = template_file.read()
                 with open(md_path, 'r', encoding='utf-8') as md_file:
                     content = md_file.read()
-                title = get_markdown_title(md_path)
+                    lines = content.split('\n')
+                    title = get_markdown_title(md_path)
+                    # Remove the first line (title) from the content
+                    content = '\n'.join(lines[1:])
                 html_content = markdown.markdown(content)
                 sidebar_content = generate_sidebar_content('notes')
                 note_html = template.replace('{sidebar_content}', sidebar_content)
@@ -94,7 +97,10 @@ def generate_note_html(file_path):
     sidebar_content = generate_sidebar_content('notes')
     with open(file_path, 'r', encoding='utf-8') as note_file:
         content = note_file.read()
+        lines = content.split('\n')
         title = get_markdown_title(file_path)
+        # Remove the first line (title) from the content
+        content = '\n'.join(lines[1:])
     
     html_content = markdown.markdown(content)
     note_html = template.replace('{sidebar_content}', sidebar_content)
