@@ -33,6 +33,12 @@ header {
     justify-content: center;
 }
 
+#note-title, #note-content {
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 #note-title {
     margin: 0;
     font-size: 24px;
@@ -42,6 +48,12 @@ header {
     padding-left: 20px;
     flex-grow: 1;
     font-weight: bold;
+}
+
+#note-content {
+    width: 60%;
+    margin-left: 0;
+    margin-right: auto;
 }
 
 #sidebar {
