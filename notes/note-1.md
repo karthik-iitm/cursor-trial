@@ -41,3 +41,5 @@ Let's approach this step-by-step:
    $y = \pm \frac{4\sqrt{2}}{3}$
 
 6) Therefore, the farthest points are $(-\frac{1}{3}, \frac{4\sqrt{2}}{3})$ and $(-\frac{1}{3}, -\frac{4\sqrt{2}}{3})$.
+
+<img src="ellipse_problem.png" alt="Ellipse Problem Visualization" style="width:100%;"/>
