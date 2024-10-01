@@ -21,18 +21,29 @@ body {
 }
 
 #sidebar-content {
-    padding-top: 50px;
+    padding-top: 50px; /* Add some top padding to move content below the toggle button */
+}
+
+#sidebar-content nav ul {
+    list-style-type: none;
+    padding-left: 20px;
+    margin-top: 0;
+}
+
+#sidebar-content nav ul li {
+    margin-bottom: 10px;
 }
 
 #main-content {
     flex-grow: 1;
     padding: 20px;
-    transition: margin-left 0.3s;
+    transition: margin-left 0.3s, width 0.3s;
     margin-left: 250px;
 }
 
 #main-content.sidebar-collapsed {
     margin-left: 0;
+    width: 50%;
 }
 
 #toggle-sidebar {
