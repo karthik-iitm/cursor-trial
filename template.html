@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Notes</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <button id="toggle-sidebar">☰</button>
+    <div id="sidebar">
+        <div id="sidebar-content">
+            <h2>My Notes</h2>
+            <nav>
+                {sidebar_content}
+            </nav>
+        </div>
+    </div>
+    <div id="main-content">
+        <div id="note-content"></div>
+    </div>
+    <script>
+        console.log('Sidebar content:', document.getElementById('sidebar-content').innerHTML);
+    </script>
+    <script src="js/script.js"></script>
+</body>
+</html>
