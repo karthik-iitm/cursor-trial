@@ -19,15 +19,23 @@ document.addEventListener('DOMContentLoaded', function() {
             let fullPath = path;
             if (path === '/' || path === '/index' || path === '/index.html') {
                 fullPath = '/index.html';
-            } else if (!path.startsWith('/notes/') && !path.startsWith('/index')) {
+            } else if (!path.startsWith('/notes/') && !path.startsWith('/')) {
                 fullPath = '/notes/' + path;
             }
             if (!fullPath.endsWith('.html')) {
                 fullPath += '.html';
             }
+
+            // Prevent loading /notes/index.html
+            if (fullPath === '/notes/index.html') {
+                fullPath = '/index.html';
+            }
+
             console.log('Attempting to load:', fullPath);
+            
             const response = await fetch(fullPath);
             console.log('Response status:', response.status);
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -37,55 +45,60 @@ document.addEventListener('DOMContentLoaded', function() {
             const doc = parser.parseFromString(content, 'text/html');
             const title = doc.getElementById('note-title').textContent;
             const noteContentElement = doc.getElementById('note-content').innerHTML;
+            const sidebarContentElement = doc.getElementById('sidebar-content');
             
-            noteTitle.textContent = title;
-            noteContent.innerHTML = noteContentElement;
+            document.getElementById('note-title').textContent = title;
+            document.getElementById('note-content').innerHTML = noteContentElement;
 
             // Update sidebar links
-            const sidebarContent = doc.getElementById('sidebar-content');
-            if (sidebarContent) {
-                document.getElementById('sidebar-content').innerHTML = sidebarContent.innerHTML;
+            if (sidebarContentElement) {
+                document.getElementById('sidebar-content').innerHTML = sidebarContentElement.innerHTML;
             }
-
-            // Fix image paths
-            noteContent.querySelectorAll('img').forEach(img => {
-                if (!img.src.startsWith('http')) {
-                    img.src = `/notes/${img.getAttribute('src')}`;
-                }
-            });
-
-            // Render math
-            renderMathInElement(noteContent, {
-                delimiters: [
-                    {left: "$$", right: "$$", display: true},
-                    {left: "$", right: "$", display: false},
-                    {left: "\\(", right: "\\)", display: false},
-                    {left: "\\[", right: "\\]", display: true}
-                ],
-                throwOnError: false
-            });
 
             // Update URL without reloading the page
             history.pushState(null, '', path);
+
+            // Render math after content is loaded
+            renderMath();
         } catch (error) {
             console.error('Error loading content:', error);
-            noteContent.innerHTML = `<p>Error loading content: ${error.message}</p>`;
+            document.getElementById('note-content').innerHTML = `<p>Error loading content: ${error.message}</p>`;
         }
     }
 
-    // Add click events to sidebar links and prevent default behavior
+    function renderMath() {
+        renderMathInElement(document.body, {
+            delimiters: [
+                {left: "$$", right: "$$", display: true},
+                {left: "$", right: "$", display: false},
+                {left: "\\(", right: "\\)", display: false},
+                {left: "\\[", right: "\\]", display: true}
+            ],
+            throwOnError : false
+        });
+    }
+
+    // Add click events to links and prevent default behavior for internal links
     document.body.addEventListener('click', function(e) {
-        if (e.target.tagName === 'A' && !e.target.id.includes('home-button')) {
+        if (e.target.tagName === 'A') {
+            const href = e.target.getAttribute('href');
+            if (href.startsWith('http') || href.startsWith('https')) {
+                // External link: allow default behavior
+                return;
+            }
             e.preventDefault();
-            const path = e.target.getAttribute('href');
-            loadContent(path);
+            if (e.target.id === 'home-button') {
+                loadContent('index.html');
+            } else {
+                loadContent(href);
+            }
         }
     });
 
     // Handle home button click
     homeButton.addEventListener('click', function(e) {
         e.preventDefault();
-        loadContent('/index.html');
+        loadContent('/');
     });
 
     // Handle browser back/forward navigation
