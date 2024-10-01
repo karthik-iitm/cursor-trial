@@ -1,11 +1,14 @@
 import os
+import markdown
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+import time
 
 class MarkdownHandler(FileSystemEventHandler):
     def on_modified(self, event):
         if event.src_path.endswith('.md'):
+            print(f"File {event.src_path} has been modified")
             generate_html()
 
 def get_markdown_title(file_path):
@@ -21,11 +24,11 @@ def generate_html():
         template = template_file.read()
     
     sidebar_content = generate_sidebar_content('notes')
-    index_content = generate_index_content('notes')
+    index_content, index_title = generate_index_content('index.md')
     
     # Generate index.html
     index_html = template.replace('{sidebar_content}', sidebar_content)
-    index_html = index_html.replace('{note_title}', 'Notes')
+    index_html = index_html.replace('{note_title}', index_title)
     index_html = index_html.replace('{note_content}', index_content)
     
     with open('index.html', 'w') as index_file:
@@ -45,17 +48,33 @@ def generate_sidebar_content(directory):
     content += "</ul>"
     return content
 
-def generate_index_content(directory):
-    return ""  # Return an empty string instead of generating links
+def generate_index_content(index_file):
+    if os.path.exists(index_file):
+        with open(index_file, 'r', encoding='utf-8') as file:
+            content = file.read()
+            lines = content.split('\n')
+            title = 'Index'
+            if lines and lines[0].startswith('# '):
+                title = lines[0][2:].strip()
+                content = '\n'.join(lines[1:])
+            html_content = markdown.markdown(content)
+            return html_content, title
+    else:
+        return "<p>Welcome to your notes!</p>", "Index"
 
 class CustomHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=os.path.dirname(__file__), **kwargs)
 
     def do_GET(self):
-        if self.path == '/':
-            self.path = '/index.html'
-        return SimpleHTTPRequestHandler.do_GET(self)
+        if self.path.startswith('/notes/') and self.path.endswith('.md'):
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
+            self.end_headers()
+            with open(self.path[1:], 'rb') as file:
+                self.wfile.write(file.read())
+        else:
+            return SimpleHTTPRequestHandler.do_GET(self)
 
 def run_server(port=8000):
     handler = CustomHandler
@@ -68,7 +87,8 @@ if __name__ == "__main__":
     
     event_handler = MarkdownHandler()
     observer = Observer()
-    observer.schedule(event_handler, path='notes', recursive=False)
+    observer.schedule(event_handler, path='notes', recursive=True)
+    observer.schedule(event_handler, path='.', recursive=False)  # Watch for changes to index.md
     observer.start()
 
     try:

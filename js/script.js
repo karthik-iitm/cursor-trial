@@ -5,11 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const noteTitle = document.getElementById('note-title');
     const noteContent = document.getElementById('note-content');
 
-    if (!noteContent) {
-        console.error('note-content element not found');
-        return;
-    }
-
     toggleButton.addEventListener('click', function() {
         sidebar.classList.toggle('collapsed');
         mainContent.classList.toggle('sidebar-collapsed');
@@ -25,10 +20,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const content = await response.text();
+            console.log('Fetched content:', content.substring(0, 100) + '...'); // Log the first 100 characters
             
             if (path === 'index') {
-                noteTitle.textContent = '';
-                noteContent.innerHTML = ''; // Leave the content area empty for the index page
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(content, 'text/html');
+                const title = doc.getElementById('note-title').textContent;
+                const indexContent = doc.getElementById('note-content').innerHTML;
+                
+                noteTitle.textContent = title;
+                noteContent.innerHTML = indexContent;
             } else {
                 const lines = content.split('\n');
                 let title = path.replace('.md', '').replace(/-/g, ' ');
@@ -58,19 +59,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Add click events to sidebar links and content links
-    document.body.addEventListener('click', function(e) {
-        if (e.target.tagName === 'A' && e.target.hasAttribute('data-path')) {
+    // Add click events to sidebar links
+    document.querySelectorAll('#sidebar-content a').forEach(link => {
+        link.addEventListener('click', (e) => {
             e.preventDefault();
-            const path = e.target.getAttribute('data-path');
+            const path = link.getAttribute('data-path');
             console.log('Clicked link with path:', path);
             loadContent(path);
-        }
+        });
     });
 
     // Load index content on initial page load
     loadContent('index');
-
-    // Initialize KaTeX auto-render
-    renderMathInElement(document.body);
 });
